@@ -65,10 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const defaultTiers = [
             { name: 'Absolute Cinema', color: '#ff7f7f' },
             { name: 'Was Peak', color: '#ffbf7f' },
-            { name: 'Good Shii', color: '#ffff7f' },
+            { name: 'Good Stuff', color: '#ffff7f' },
             { name: 'Mid', color: '#66d466' },
-            { name: 'Absolute Poopystinky', color: '#947349' },
-            { name: 'Companion', color: '#c5c2b0' }
+            { name: 'Bad', color: '#947349' },
+            { name: 'Absolute Garbage', color: '#c5c2b0' }
         ];
         defaultTiers.forEach(tier => createTierRow(tier.name, tier.color));
     }
