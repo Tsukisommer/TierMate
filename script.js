@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUpload = document.getElementById('image-upload');
     const inventoryBox = document.getElementById('inventory-box');
     
+    // NEW Project Buttons
+    const saveProjectBtn = document.getElementById('save-project-btn');
+    const loadProjectInput = document.getElementById('load-project-input');
+    
     const searchInput = document.getElementById('api-search-input');
     const searchBtn = document.getElementById('api-search-btn');
     const searchType = document.getElementById('api-search-type');
@@ -40,7 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const inventoryImages = [];
             document.querySelectorAll('#inventory-box .tier-item-wrapper').forEach(wrapper => {
                 const imgSrc = wrapper.querySelector('.tier-item').src;
-                inventoryImages.push(imgSrc);
+                const captionText = wrapper.querySelector('.tier-item-caption').innerText;
+                inventoryImages.push({ src: imgSrc, caption: captionText });
             });
 
             const state = { tiers, inventoryImages };
@@ -55,7 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedState) {
             const state = JSON.parse(savedState);
             state.tiers.forEach(tier => createTierRow(tier.name, tier.color, tier.images));
-            state.inventoryImages.forEach(src => createAndAppendImage(src, inventoryBox));
+            
+            if (state.inventoryImages) {
+                state.inventoryImages.forEach(data => {
+                    const src = data.src || data; 
+                    const caption = data.caption || "";
+                    createAndAppendImage(src, inventoryBox, caption);
+                });
+            }
             return true;
         }
         return false; 
@@ -147,6 +159,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // save project
+    saveProjectBtn.addEventListener('click', () => {
+        saveBoardState(); // Force a fresh save to the cache
+        const savedState = localStorage.getItem('tierMateState');
+        if (!savedState) return;
+
+        const blob = new Blob([savedState], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        // save date in case needed
+        const date = new Date().toISOString().split('T')[0];
+        a.download = `TierMate_Project_${date}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    });
+
+    // load saved json projects
+    loadProjectInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                
+                if (!importedState.tiers || !Array.isArray(importedState.tiers)) {
+                    alert("This doesn't look like a valid TierMate project file.");
+                    return;
+                }
+
+                if(confirm("Loading this project will overwrite your current board. Continue?")) {
+                    localStorage.setItem('tierMateState', JSON.stringify(importedState));
+                    
+                    tierBoard.innerHTML = '';
+                    inventoryBox.innerHTML = '';
+                    
+                    importedState.tiers.forEach(tier => createTierRow(tier.name, tier.color, tier.images));
+                    
+                    if (importedState.inventoryImages) {
+                        importedState.inventoryImages.forEach(data => {
+                            const src = data.src || data; 
+                            const caption = data.caption || "";
+                            createAndAppendImage(src, inventoryBox, caption);
+                        });
+                    }
+                }
+            } catch (err) {
+                alert("Error reading file. Make sure it's a valid JSON project file.");
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    });
+
     function createContextMenuTemplate() {
         const template = document.getElementById('context-menu-template');
         return template.content.querySelector('.context-menu').cloneNode(true);
@@ -226,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // image diwnload button
             const downloadBtn = menu.querySelector('.download-image-btn');
             if (downloadBtn) {
                 downloadBtn.addEventListener('click', async (ev) => {
