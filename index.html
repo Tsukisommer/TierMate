@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TierMate - Tier List Maker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="controls">
+            <button id="add-tier-btn">➕ Add New Tier</button>
+            <button id="save-image-btn" style="background-color: #d32f2f;">💾 Save List as Image</button>
+            <button id="reset-board-btn" style="background-color: #555;">⚠️ Reset Everything</button>
+        </div>
+
+        <div id="top-search-section">
+            <div class="search-bar">
+                <select id="api-search-type">
+                    <option value="movies">Movies</option>
+                    <option value="anime">Anime</option>
+                    <option value="shows">TV Shows</option>
+                    <option value="games">Games</option>
+                </select>
+                <input type="text" id="api-search-input" placeholder="Type name to search...">
+                <button id="api-search-btn">Search</button>
+            </div>
+            <div id="search-results-container"></div>
+        </div>
+    </div>
+
+    <div id="tier-board"></div>
+
+    <div id="inventory-section">
+        <div class="inventory-header">
+            <h3>Image Inventory</h3>
+            <label class="upload-btn">
+                Import Local Images
+                <input type="file" id="image-upload" multiple accept="image/*" style="display: none;">
+            </label>
+        </div>
+        <p style="font-size: 12px; color: #888;">Images uploaded or searched will appear here. Drag them into any tier.</p>
+        <div id="inventory-box" class="dropzone"></div>
+    </div>
+
+    <div class="footer-credit">
+        Made <del>with Love</del> by Tsuki out of Frustration
+    </div>
+
+    <template id="context-menu-template">
+        <div class="context-menu" style="display: none;">
+            <button class="remove-image-btn"><i class="fa fa-trash"></i> Remove Image</button>
+            <button class="download-image-btn"><i class="fa fa-download"></i> Download Image</button>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
