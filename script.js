@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!loadBoardState()) {
         const defaultTiers = [
             { name: 'Absolute Cinema', color: '#ff7f7f' },
-            { name: 'Was Peak', color: '#ffbf7f' },
+            { name: 'It\'s Peak', color: '#ffbf7f' },
             { name: 'Good Stuff', color: '#ffff7f' },
             { name: 'Mid', color: '#66d466' },
             { name: 'Bad', color: '#947349' },
