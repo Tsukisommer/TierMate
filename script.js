@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // save project
     saveProjectBtn.addEventListener('click', () => {
-        saveBoardState(); // Force a fresh save to the cache
+        saveBoardState(); 
         const savedState = localStorage.getItem('tierMateState');
         if (!savedState) return;
 
@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         a.style.display = 'none';
         a.href = url;
         
-        // save date in case needed
         const date = new Date().toISOString().split('T')[0];
         a.download = `TierMate_Project_${date}.json`;
         
