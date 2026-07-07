@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUpload = document.getElementById('image-upload');
     const inventoryBox = document.getElementById('inventory-box');
     
-    // NEW Project Buttons
     const saveProjectBtn = document.getElementById('save-project-btn');
     const loadProjectInput = document.getElementById('load-project-input');
     
@@ -159,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // save project
     saveProjectBtn.addEventListener('click', () => {
         saveBoardState(); 
         const savedState = localStorage.getItem('tierMateState');
@@ -181,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(a);
     });
 
-    // load saved json projects
     loadProjectInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -519,4 +516,128 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, 150); 
     });
+
+    // --- RANDOMIZER WHEEL LOGIC ---
+    const randomizerBtn = document.getElementById('randomizer-btn');
+    const wheelModal = document.getElementById('wheel-modal');
+    const closeModalBtn = document.querySelector('.close-modal');
+    const spinBtn = document.getElementById('spin-btn');
+    const wheelCanvas = document.getElementById('wheel-canvas');
+    const wheelResult = document.getElementById('wheel-result');
+    const ctx = wheelCanvas.getContext('2d');
+
+    let wheelItems = [];
+    let currentAngle = 0;
+    let isSpinning = false;
+    let spinTimeout = null;
+    let spinStart = null;
+    let startAngle = 0;
+    let spinTotalAngle = 0;
+    const spinTimeTotal = 4000; // 4 seconds of spin
+
+    // Material design inspired colors for the wheel
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+
+    randomizerBtn.addEventListener('click', () => {
+        // Grab only items currently in the inventory box that have a caption typed in
+        const captions = Array.from(document.querySelectorAll('#inventory-box .tier-item-caption'))
+            .map(el => el.innerText.trim())
+            .filter(text => text.length > 0);
+
+        if (captions.length === 0) {
+            alert("Oops! Add some items to the inventory first and make sure they have names underneath them!");
+            return;
+        }
+
+        wheelItems = captions;
+        currentAngle = 0;
+        wheelResult.innerText = '';
+        drawWheel();
+        wheelModal.style.display = 'flex';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        if(!isSpinning) wheelModal.style.display = 'none';
+    });
+
+    function drawWheel() {
+        const numItems = wheelItems.length;
+        const arcSize = (2 * Math.PI) / numItems;
+        const radius = wheelCanvas.width / 2;
+        const centerX = radius;
+        const centerY = radius;
+
+        ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+        for (let i = 0; i < numItems; i++) {
+            const angle = currentAngle + i * arcSize;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, angle, angle + arcSize, false);
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.fill();
+            ctx.save();
+
+            // Text Setup
+            ctx.fillStyle = "white";
+            ctx.translate(centerX, centerY);
+            ctx.rotate(angle + arcSize / 2);
+            ctx.textAlign = "right";
+            ctx.font = "bold 16px 'Segoe UI'";
+            
+            // Truncate long titles so they fit on the wheel slice
+            let text = wheelItems[i];
+            if(text.length > 18) text = text.substring(0, 15) + '...';
+            
+            ctx.fillText(text, radius - 15, 6);
+            ctx.restore();
+        }
+    }
+
+    spinBtn.addEventListener('click', () => {
+        if (isSpinning || wheelItems.length === 0) return;
+        isSpinning = true;
+        wheelResult.innerText = 'Spinning...';
+
+        startAngle = currentAngle;
+        // Spin between 4 to 8 full rotations plus a random offset
+        spinTotalAngle = (Math.random() * 4 + 4) * Math.PI * 2 + (Math.random() * Math.PI * 2);
+        spinStart = null; // Reset timestamp
+        
+        requestAnimationFrame(rotateWheel);
+    });
+
+    function rotateWheel(timestamp) {
+        if (!spinStart) spinStart = timestamp;
+        let progress = timestamp - spinStart;
+
+        if (progress >= spinTimeTotal) {
+            currentAngle = startAngle + spinTotalAngle;
+            drawWheel();
+            stopRotateWheel();
+            return;
+        }
+
+        // Quartic ease-out function for smooth deceleration
+        let t = progress / spinTimeTotal;
+        t--;
+        let easedProgress = -(t * t * t * t - 1);
+
+        currentAngle = startAngle + (spinTotalAngle * easedProgress);
+        drawWheel();
+        spinTimeout = requestAnimationFrame(rotateWheel);
+    }
+
+    function stopRotateWheel() {
+        isSpinning = false;
+        const numItems = wheelItems.length;
+        
+        // Calculate which item is currently under the pointer (at 270 degrees / the top)
+        const degrees = (currentAngle * 180 / Math.PI) % 360;
+        const index = Math.floor(((360 - degrees + 270) % 360) / (360 / numItems));
+        
+        wheelResult.innerText = '🎉 ' + wheelItems[index] + ' 🎉';
+        
+        // Confetti effect or anything else could go here in the future
+    }
 });
