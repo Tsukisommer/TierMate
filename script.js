@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })).filter(item => item.src);
             }
             else if (type === 'movies') {
-                const res = await fetch(`https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`);
+                const res = await fetch(`https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}&limit=10`);
                 const data = await res.json();
                 let items = data.description || data.d || [];
                 results = items.map(item => ({ 
